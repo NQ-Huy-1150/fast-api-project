@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-from domain.schema.User import User
+from domain.schema.User import User, UserUpdate, UserResponse
 from contextlib import asynccontextmanager
 from domain.orm.DomainORM import Base, engine
 from services.UserService import UserService
@@ -15,42 +15,42 @@ async def lifespan(app: FastAPI):
 
 #application
 app = FastAPI(lifespan=lifespan)
-users = []
 
 @app.get("/")
 async def homepage() :
     return "hello"
-@app.get("/user/{userId}")
-def getUserDetail(userId : int) :
-    for user in users :
-        print(f">>>>>>>> user id : {userId}")
-        if user.id == userId : return user
-    return {"User" : "Not Found!"}
+@app.get("/user/{id}", response_model=UserResponse)
+def getUserDetail(id : int, userService : UserService = Depends()) :
+    rs = userService.getUserById(id)
+    if rs is not None :
+        return rs
+    else: raise HTTPException(status_code=404, detail={"User": "Not Found"})
+
+@app.get("/users",response_model=list[UserResponse])
+def getAllUser(userService : UserService = Depends()):
+    rs = userService.fetchAllUser()
+    if rs is not None :
+        return rs
+    else: raise HTTPException(status_code=404, detail={"Users": "Not Found"})
+
 
 @app.post("/register")
 def register(creUser : User, userService : UserService = Depends()) :
-    if creUser != None :
-        userService.getCreateUser(creUser)
-        return {"message": "Created", "user": creUser}
+    if creUser is not None :
+        rs = userService.getCreateUser(creUser)
+        return {"message": "Created", "user": rs}
     else: raise HTTPException(status_code=500, detail="some thing wrong !")
 
-@app.put("/update-user")
-def updateUser(currentUser : User) :
-    if currentUser != None :
-        for user in users :
-            if user.id == currentUser :
-                #user.fullName = currentUser.fullName
-                user.email = currentUser.email
-                user.address = currentUser.address
-                user.phoneNumber = currentUser.phoneNumber
-                return user
-            else : return {"id": "Not Found!"}
-    return "Some errors occur !"
-@app.delete("/delete-user")
-def deleteUser(userId : int):
-    for user in users :
-        if user.id == userId :
-            users.remove(user)
-            return users
-        else : return {"id": "Not Found!"}
-    return "Some errors occur !"
+@app.put("/update-user/{id}")
+def updateUser(id : int,currentUser : UserUpdate, userService : UserService = Depends()) :
+    if userService.isUserExisted(id) :
+        userService.getUpdateUser(id,currentUser)
+        return {"message": "Update Successfully !"}
+    else: raise HTTPException(status_code=404, detail={"Users": "Not Found"})
+
+@app.delete("/delete-user/{id}")
+def deleteUser(id : int, userService : UserService = Depends()):
+    if userService.isUserExisted(id) :
+        userService.getDeleteUser(id)
+        return {"message": "Delete Successfully !"}
+    else: raise HTTPException(status_code=404, detail={"Users": "Not Found"})

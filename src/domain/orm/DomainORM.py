@@ -1,8 +1,12 @@
+import os
 from sqlalchemy import create_engine, text, Column, String, Integer
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from dotenv import load_dotenv
+load_dotenv()
 
-DATABASE_URL = "postgresql+psycopg2://postgres:123456@localhost/quanly"
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL is None :
+    raise ValueError("Cant connect to Database !")
 engine = create_engine(DATABASE_URL,echo=True)
 Session = sessionmaker(bind=engine)
 #Depends
@@ -14,7 +18,8 @@ def getConn() :
         db.close()
 
 # ORM classes
-Base = declarative_base()
+class Base(DeclarativeBase) :
+    pass
 class UserORM (Base) :
     __tablename__ = "users"
     id = Column(Integer,autoincrement = True, primary_key = True)
