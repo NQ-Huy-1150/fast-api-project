@@ -54,3 +54,7 @@ def deleteUser(id : int, userService : UserService = Depends()):
         userService.getDeleteUser(id)
         return {"message": "Delete Successfully !"}
     else: raise HTTPException(status_code=404, detail={"Users": "Not Found"})
+
+@app.get("/new-year")
+def happy_new_year() :
+    return {"message": "Chào mừng xuân bính ngọ 2026 !"}
