@@ -6,6 +6,19 @@ class User(BaseModel) :
     email : str
     address : str
     phoneNumber : str | None = None
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "firstName": "John"
+                    ,"lastName": "Doe"
+                    ,"email": "example@gmail.com"
+                    ,"address": "some where"
+                    ,"phoneNumber": "some number"
+                }
+            ]
+        }
+    }
 # return domain
 class UserResponse(BaseModel) :
     id : int
