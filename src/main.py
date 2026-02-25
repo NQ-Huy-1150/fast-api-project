@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from domain.orm.DomainORM import Base, engine
 from controller.UserController import router as userRouter
 from controller.LLMController import router as LLMRouter
+from controller.ItemController import router as item_router
 #pre setup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -17,3 +18,4 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(userRouter)
 app.include_router(LLMRouter)
+app.include_router(item_router)
