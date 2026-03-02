@@ -1,6 +1,7 @@
 import os
-from sqlalchemy import create_engine, text, Column, String, Integer
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy import create_engine, text, Column, String, Integer, ForeignKey
+from sqlalchemy.orm import sessionmaker, DeclarativeBase, relationship
+from sqlalchemy.dialects.postgresql import JSONB
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -27,3 +28,11 @@ class UserORM (Base) :
     email = Column(String)
     address = Column(String)
     phoneNumber = Column("phone_number",String)
+    chats = relationship("ChatHistoryORM", back_populates="user")
+class ChatHistoryORM (Base):
+    __tablename__ = "chat_histories"
+    id = Column(Integer,autoincrement = True, primary_key = True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    messages = Column(JSONB, default=list)
+    user = relationship("UserORM", back_populates="chats")
+
