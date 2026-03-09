@@ -29,10 +29,16 @@ class UserORM (Base) :
     address = Column(String)
     phoneNumber = Column("phone_number",String)
     chats = relationship("ChatHistoryORM", back_populates="user")
+    rag_chat = relationship("RagChatHistoryORM", back_populates="user")
 class ChatHistoryORM (Base):
     __tablename__ = "chat_histories"
     id = Column(Integer,autoincrement = True, primary_key = True)
     user_id = Column(Integer, ForeignKey("users.id"))
     messages = Column(JSONB, default=list)
     user = relationship("UserORM", back_populates="chats")
-
+class RagChatHistoryORM (Base):
+    __tablename__ = "rag_chat_histories"
+    id = Column(Integer,autoincrement = True, primary_key = True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    messages = Column(JSONB, default=list)
+    user = relationship("UserORM", back_populates="rag_chat")
