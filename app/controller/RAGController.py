@@ -15,6 +15,6 @@ def create_chat_history(user_id : int, service: ai_service):
     else: raise HTTPException(status_code=404, detail={"Users": "Not Found"})
 
 @router.post("/chat/{user_id}/{chat_id}/{collection_name}", response_model=ChatResponse)
-def ask_llama(user_id : int, chat_id : int ,collection_name : str ,request: ChatRequest, service: ai_service):
+def ask_llama(user_id: int, chat_id: int, collection_name: str, request: ChatRequest, service: ai_service):
     answer = service.ask(user_id, chat_id, collection_name, request)
     return {"answer": answer}

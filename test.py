@@ -90,7 +90,7 @@ def start_app():
 
         chat_history.append(HumanMessage(content=question))
         chat_history.append(AIMessage(response["answer"]))
-        print(type(response["answer"]))
+        print(type(retriever))
         print(f"AI: {response['answer']}")
 
 if __name__ == "__main__":

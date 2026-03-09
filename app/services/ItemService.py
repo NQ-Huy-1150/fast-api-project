@@ -26,7 +26,12 @@ class ItemService:
         with open(file_location, "wb+") as file_object:
             shutil.copyfileobj(uploaded_file.file, file_object)
         # convert to vector
-        bg_tasks.add_task(self.handle_convert_to_vector,file_location, cast(str, uploaded_file.filename))
+        # remove dot "." from collection_name to fix api critical bug
+        temp = cast(str,uploaded_file.filename)
+        length = len(temp)
+        named = cast(str, temp[0:length - 4])
+        print(named)
+        bg_tasks.add_task(self.handle_convert_to_vector,file_location, named)
         return {"info": f"file '{uploaded_file.filename}' saved at '{file_location}' !\n The File is is being processed."}
     def handle_convert_to_vector(self, file_path : str, file_name : str):
         # load file
