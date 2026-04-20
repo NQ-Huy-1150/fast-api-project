@@ -12,20 +12,20 @@ class UserService :
 
         self.repo = repo
 
-    def getCreateUser(self,newUser : User) :
-        return self.repo.createUser(newUser)
+    async def getCreateUser(self,newUser : User) :
+        return await self.repo.createUser(newUser)
     
-    def getUserById(self, id : int):
-        return self.repo.findUserById(id)
+    async def getUserById(self, id : int):
+        return await self.repo.findUserById(id)
     
-    def fetchAllUser(self):
-        return self.repo.findAll()
+    async def fetchAllUser(self):
+        return await self.repo.findAll()
     
-    def getUpdateUser(self,id : int, user : UserUpdate):
-        return self.repo.updateUser(id,user)
+    async def getUpdateUser(self,id : int, user : UserUpdate):
+        return await self.repo.updateUser(id,user)
     
-    def isUserExisted(self, id : int):
-        return self.repo.ifUserWithIdExisted(id)
+    async def isUserExisted(self, id : int):
+        return await self.repo.ifUserWithIdExisted(id)
     
-    def getDeleteUser(self, id : int):
-        return self.repo.deleteUser(id)
+    async def getDeleteUser(self, id : int):
+        return await self.repo.deleteUser(id)

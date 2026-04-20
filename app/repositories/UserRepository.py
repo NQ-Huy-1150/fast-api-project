@@ -1,41 +1,43 @@
-from domain.orm.DomainORM import getConn, UserORM
+from domain.orm.DomainORM import UserORM, get_async_conn
 from sqlalchemy import select, update, delete
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
-from domain.schema.User import User, UserUpdate, UserResponse
+from domain.schema.User import User, UserUpdate
 class UserRepository :
-    def __init__(self, db : Session = Depends(getConn)):
+    def __init__(self, db : AsyncSession = Depends(get_async_conn)):
         self.db = db
-    def createUser(self,currentUser: User) :
-        user = UserORM(fullName = currentUser.firstName + " " + currentUser.lastName
-                   ,email = currentUser.email
-                   ,address = currentUser.address
-                   ,phoneNumber = currentUser.phoneNumber)
-        self.db.add(user)
-        self.db.commit()
-        self.db.refresh(user)
+    async def createUser(self,currentUser: User) :
+        async with self.db.begin() :
+            user = UserORM(fullName = currentUser.firstName + " " + currentUser.lastName
+                    ,email = currentUser.email
+                    ,address = currentUser.address
+                    ,phoneNumber = currentUser.phoneNumber)
+            self.db.add(user)
+        await self.db.refresh(user)
         return user
     
-    def findUserById(self,id : int) :
+    async def findUserById(self,id : int) :
         stm = select(UserORM).where(UserORM.id == id)
-        return self.db.scalar(stm)
+        return await self.db.scalar(stm)
     
-    def findAll(self):
+    async def findAll(self):
         stm = select(UserORM)
-        return self.db.scalars(stm).all()
+        rs = await self.db.execute(stm)
+        users = rs.scalars().all()
+        return users
     
-    def updateUser(self, id : int , user : UserUpdate) :
-        stm = update(UserORM).where(UserORM.id == id).values(
-                    fullName = user.firstName + " " + user.lastName
-                   ,address = user.address
-                   ,phoneNumber = user.phoneNumber)
-        self.db.execute(stm)
-        self.db.commit()
+    async def updateUser(self, id : int , user : UserUpdate) :
+        async with self.db.begin() :
+            stm = update(UserORM).where(UserORM.id == id).values(
+                        fullName = user.firstName + " " + user.lastName
+                    ,address = user.address
+                    ,phoneNumber = user.phoneNumber)
+            await self.db.execute(stm)
 
-    def ifUserWithIdExisted(self, id : int):
-        return self.db.scalar(select(UserORM).where(UserORM.id == id)) is not None
+    async def ifUserWithIdExisted(self, id : int):
+        return await self.db.scalar(select(UserORM).where(UserORM.id == id)) is not None
     
-    def deleteUser(self, id : int):
-        stm = delete(UserORM).where(UserORM.id == id)
-        self.db.execute(stm)
-        self.db.commit()
+    async def deleteUser(self, id : int):
+        async with self.db.begin():
+            stm = delete(UserORM).where(UserORM.id == id)
+            await self.db.execute(stm)

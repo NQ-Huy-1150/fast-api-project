@@ -1,11 +1,13 @@
 import os
 from sqlalchemy import create_engine, text, Column, String, Integer, ForeignKey
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, relationship
 from sqlalchemy.dialects.postgresql import JSONB
 from dotenv import load_dotenv
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+ASYNC_DATABASE_URL = os.getenv("A_DATABASE_URL");
 if DATABASE_URL is None :
     raise ValueError("Cant connect to Database !")
 engine = create_engine(DATABASE_URL,echo=True)
@@ -18,6 +20,17 @@ def getConn() :
     finally:
         db.close()
 
+if ASYNC_DATABASE_URL is None :
+    raise ValueError("Cant connect to Database !")
+async_engine = create_async_engine(ASYNC_DATABASE_URL,echo=True)
+a_session = async_sessionmaker(bind=async_engine)
+#Depends
+async def get_async_conn() :
+    adb = a_session()
+    try:
+        yield adb
+    finally:
+        await adb.close()
 # ORM classes
 class Base(DeclarativeBase) :
     pass

@@ -8,8 +8,8 @@ router = APIRouter(prefix="/ai", tags=["AI Engine"])
 ai_service = Annotated[AIService, Depends()]
 
 @router.post("/create_chat", response_model=ChatHistoryResponse)
-def create_chat_history(user_id : int, service: ai_service):
-    rs = service.get_create_chat(user_id)
+async def create_chat_history(user_id : int, service: ai_service):
+    rs = await service.get_create_chat(user_id)
     if rs is not None :
         return ChatHistoryResponse.model_validate(rs)
     else: raise HTTPException(status_code=404, detail={"Users": "Not Found"})
