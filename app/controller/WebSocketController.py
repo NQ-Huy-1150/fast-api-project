@@ -15,7 +15,7 @@ async def websocket_endpoint(websocket : WebSocket) :
             response = f"Hello from fastapi. Recieved message \"{data}\" successfully !"
             await websocket.send_text(response)
     except Exception as e :
-        print(">>>>>>>>>>>>>>>>> No connection found !")
+        raise HTTPException(status_code=504, detail="Timeout")
 
 @router.websocket("/chat/{user_id}/{chat_id}")
 async def chat_with_ollama(user_id : int, chat_id : int, service : ai_service, websocket : WebSocket) :
@@ -27,7 +27,7 @@ async def chat_with_ollama(user_id : int, chat_id : int, service : ai_service, w
             response = await service.ask(user_id, chat_id, chat_request)
             await websocket.send_text(cast(str,response))
     except Exception as e :
-        print(">>>>>>>>>>>>>>>>> No connection found !")
+        raise HTTPException(status_code=504, detail="Timeout")
 
 @router.websocket("/rag/{user_id}/{chat_id}")
 async def chat_with_rag(user_id : int, chat_id : int, service : rag_service, websocket : WebSocket):
@@ -39,4 +39,4 @@ async def chat_with_rag(user_id : int, chat_id : int, service : rag_service, web
             response = await service.ask(user_id, chat_id,"dia_danh" ,chat_request)
             await websocket.send_text(cast(str,response))
     except Exception as e :
-        print(">>>>>>>>>>>>>>>>> No connection found !")
+        raise HTTPException(status_code=504, detail="Timeout")

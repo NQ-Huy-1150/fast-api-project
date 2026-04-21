@@ -1,5 +1,5 @@
 from fastapi import UploadFile, File, BackgroundTasks
-from langchain_ollama import OllamaEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 
 from langchain_community.document_loaders import PDFMinerLoader
 
@@ -16,7 +16,10 @@ import os
 import shutil
 
 load_dotenv()
-
+EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME")
+HF_TOKEN = os.getenv("HF_TOKEN")
+if EMBEDDING_MODEL_NAME is None :
+    raise ValueError("No embedding model found !")
 
 def _save_upload_file(src_file, dst_path: str) -> None:
     with open(dst_path, "wb+") as file_object:
@@ -44,7 +47,7 @@ class ItemService:
         # create chunk
         splitter = RecursiveCharacterTextSplitter(chunk_size=500,chunk_overlap=50)
         document_chunks = await asyncio.to_thread(splitter.split_documents, documents)
-        embedding = OllamaEmbeddings(model="llama3.2")
+        embedding = HuggingFaceEndpointEmbeddings(huggingfacehub_api_token=HF_TOKEN, model=EMBEDDING_MODEL_NAME)
         async_connection = os.getenv("A_DATABASE_URL")
         if async_connection is None:
             raise ValueError("A_DATABASE_URL is required for async PGVector operations")

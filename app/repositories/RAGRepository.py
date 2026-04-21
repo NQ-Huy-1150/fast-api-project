@@ -32,3 +32,15 @@ class RAGRepository :
     async def exist_by_collecton_name (self, collection_name : str) :
         result = await self.db.execute(text("SELECT 1 FROM langchain_pg_collection WHERE name = :name"), {"name": collection_name})
         return True if result.fetchone() is not None else False
+    async def delete_by_id (self, id : int) :
+        try:
+            async with self.db.begin():
+                stm = delete(RagChatHistoryORM).where(RagChatHistoryORM.id == id).returning(RagChatHistoryORM.id)
+                rs = await self.db.execute(stm)
+                deleted_id = rs.scalar_one_or_none()
+                if deleted_id is None :
+                    return False
+                return True
+        except Exception as e:
+            print(f"Error: {e}")
+            return False
