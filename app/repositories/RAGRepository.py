@@ -1,3 +1,4 @@
+import os
 from domain.orm.DomainORM import RagChatHistoryORM, get_async_conn
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession

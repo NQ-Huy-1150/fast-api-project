@@ -14,9 +14,19 @@ async def create_chat_history(user_id : int, service: ai_service):
         return ChatHistoryResponse.model_validate(rs)
     else: raise HTTPException(status_code=404, detail={"Users": "Not Found"})
 
-@router.post("/chat/{user_id}/{chat_id}/{collection_name}", response_model=ChatResponse)
+@router.post("/ask_ollama/{user_id}/{chat_id}/{collection_name}", response_model=ChatResponse)
 async def ask_llama(user_id: int, chat_id: int, collection_name: str, request: ChatRequest, service: ai_service):
     answer = await service.ask(user_id, chat_id, collection_name, request)
+    return {"answer": answer}
+
+@router.post("/chat_with_base_crag", response_model=ChatResponse)
+async def ask_with_base_crag(collection_name: str, request: ChatRequest, service: ai_service):
+    answer = await service.ask_with_base_crag(collection_name, request)
+    return {"answer": answer}
+
+@router.post("/chat/{user_id}/{chat_id}/{collection_name}", response_model=ChatResponse)
+async def ask_crag(user_id: int, chat_id: int, collection_name: str, request: ChatRequest, service: ai_service):
+    answer = await service.ask_with_crag(user_id, chat_id, collection_name, request)
     return {"answer": answer}
 
 @router.get("/chats/{user_id}",response_model=list[ChatHistoryResponse])

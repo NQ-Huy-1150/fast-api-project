@@ -1,3 +1,4 @@
+import os
 from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, messages_from_dict, messages_to_dict
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -6,7 +7,13 @@ from repositories.LLMRepository import LLMRepository
 from domain.schema.Ai import ChatRequest
 from fastapi import Depends
 from domain.schema.ChatHistory import ChatHistoryUpdate
-llm = ChatOllama(model="llama3.2")
+from dotenv import load_dotenv
+load_dotenv()
+#LLM
+model_name = os.getenv("OLLAMA_MODEL")
+if model_name is None:
+    raise ValueError ("No model name found !")
+llm = ChatOllama(model=model_name, temperature=0.01)
 prompt_template = ChatPromptTemplate.from_messages(
     [
     (

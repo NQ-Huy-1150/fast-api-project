@@ -22,10 +22,10 @@ class LLMRepository :
         stm = select(ChatHistoryORM).where(ChatHistoryORM.id == id)
         return await self.db.scalar(stm)
     async def update_chat_history(self, history: ChatHistoryUpdate ):
-        async with self.db.begin():
-            stm = update(ChatHistoryORM).where(ChatHistoryORM.id == history.id).values(
-                        messages = history.messages)
-            await self.db.execute(stm)
+        stm = update(ChatHistoryORM).where(ChatHistoryORM.id == history.id).values(
+                messages = history.messages)
+        await self.db.execute(stm)
+        await self.db.commit()
     async def exist_by_chat_history_and_user_id (self,chat_id: int, user_id: int):
         stm = select(ChatHistoryORM).where(ChatHistoryORM.id == chat_id, ChatHistoryORM.user_id == user_id)
         return True if await self.db.scalar(stm) is not None else False

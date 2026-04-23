@@ -1,0 +1,15 @@
+.git
+.gitignore
+.vscode
+.venv
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.sqlite3
+.env
+.fastapicloud
+ollama_data
+postgres_data
