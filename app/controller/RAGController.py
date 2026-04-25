@@ -24,11 +24,6 @@ async def ask_with_base_crag(collection_name: str, request: ChatRequest, service
     answer = await service.ask_with_base_crag(collection_name, request)
     return {"answer": answer}
 
-@router.post("/chat/{user_id}/{chat_id}/{collection_name}", response_model=ChatResponse)
-async def ask_crag(user_id: int, chat_id: int, collection_name: str, request: ChatRequest, service: ai_service):
-    answer = await service.ask_with_crag(user_id, chat_id, collection_name, request)
-    return {"answer": answer}
-
 @router.get("/chats/{user_id}",response_model=list[ChatHistoryResponse])
 async def fetch_all_chat(user_id : int, service : ai_service) :
     chat_histories =  await service.get_chat_histories_by_user_id(user_id)

@@ -11,7 +11,7 @@ from domain.schema.RagChatHistory import ChatHistoryUpdate
 from langchain_postgres.vectorstores import PGVector
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
-from services.CRAG.CragWithHistory import CRAGWithHistory
+from services.CRAG.Crag import CRAG
 from dotenv import load_dotenv
 load_dotenv()
 # RAG define
@@ -49,7 +49,8 @@ question_answer_chain = create_stuff_documents_chain(llm, prompt_template)
 class RagService:
     _retriever_cache = {}
     _vector_store_cache = {}
-    _crag_chain_cache = {}
+    _base_crag_chain_cache = {}
+    _history_crag_chain_cache = {}
     def __init__(self, repo : RAGRepository = Depends()):
         self.repo = repo
 
@@ -105,39 +106,12 @@ class RagService:
     # None history
     async def ask_with_base_crag(self, collection_name : str, request: ChatRequest):
         vector_store = await self.get_vector_store(collection_name)
-        if collection_name not in self._crag_chain_cache:
-            self._crag_chain_cache[collection_name] = CRAGWithHistory().get_chain(vector_store)
-        chain = self._crag_chain_cache[collection_name]
+        if collection_name not in self._base_crag_chain_cache:
+            self._base_crag_chain_cache[collection_name] = CRAG().get_chain(vector_store)
+        chain = self._base_crag_chain_cache[collection_name]
         answer = await chain.ainvoke(request.prompt)
         print(answer)
         return answer
-    # With history logic
-    async def ask_with_crag(self, user_id: int, chat_id: int, collection_name: str, request: ChatRequest):
-        if not await self.repo.exist_by_collecton_name(collection_name):
-            raise HTTPException(status_code=404, detail="Collection or document name not found !")
-
-        orm_obj = await self.get_chat_history_by_id(chat_id)
-        if not orm_obj or cast(int, orm_obj.user_id) != user_id:
-            raise HTTPException(status_code=404, detail="Chat history not found !")
-
-        vector_store = await self.get_vector_store(collection_name)
-        if collection_name not in self._crag_chain_cache:
-            self._crag_chain_cache[collection_name] = CRAGWithHistory().get_chain(vector_store)
-        chain = self._crag_chain_cache[collection_name]
-
-        chat_history = messages_from_dict(cast(list, orm_obj.messages))
-        answer = await chain.ainvoke({
-            "input": request.prompt,
-            "chat_history": chat_history
-        })
-
-        chat_history.append(HumanMessage(content=request.prompt))
-        chat_history.append(AIMessage(content=str(answer)))
-        updated_messages = messages_to_dict(chat_history)
-        history_update = ChatHistoryUpdate(id=cast(int, orm_obj.id), messages=updated_messages)
-        await self.repo.update_chat_history(history_update)
-        print(str(answer))
-        return str(answer)
 
     async def get_create_chat(self, user_id : int):
         return await self.repo.create_chat_history(user_id)
